@@ -103,7 +103,7 @@ BOOL clearCaches(BOOL verbose) {
 	static NSArray *CacheItems;
 	static dispatch_once_t onceToken;
 	dispatch_once(&onceToken, ^{
-		CacheItems = [@[
+		CacheItems = @[
 			@"com.anemonetheming.CarCache", //car file cache
 			@"com.apple.IconsCache", @"SpringBoardIconCache", @"SpringBoardIconCache-small", // icon caches
 			@"com.apple.newsstand", // 5.0+ newsstand graphics
@@ -113,7 +113,7 @@ BOOL clearCaches(BOOL verbose) {
 			@"Weather/MiniIcons", // weather icons cache
 			@"MappedImageCache/NCUIMappedImageCache", //notifications cache
 			@"MappedImageCache/Persistent" //control center, media controls
-		] retain];
+		];
 	});
 
 	printf("Clearing image caches.\n");

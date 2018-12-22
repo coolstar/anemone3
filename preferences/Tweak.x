@@ -20,17 +20,15 @@
 /*#define log_data(fmt, ...) \
             do {FILE *f = fopen("/var/mobile/pref-log.txt", "a"); fprintf(f, fmt, __VA_ARGS__);fclose(f);} while(0)*/
 
-NSArray *(*anem_CPBitmapCreateImagesFromPath)(NSString *, NSObject**, void*, void*);
-NSArray *(*oldCPBitmapCreateImagesFromPath)(NSString *, NSObject**, void*, void*);
+CFArrayRef (*anem_CPBitmapCreateImagesFromPath)(NSString *, NSObject**, void*, void*);
+CFArrayRef (*oldCPBitmapCreateImagesFromPath)(NSString *, NSObject**, void*, void*);
 
-static NSArray *newCPBitmapCreateImagesFromPath(NSString *path, NSObject **icons, void *arg2, void *arg3) {
-	NSArray *originalImages = oldCPBitmapCreateImagesFromPath(path, icons, arg2, arg3);
+static CFArrayRef CPBitmapCreateImagesFromPath_new(NSString *path, NSObject **icons, void *arg2, void *arg3) {
+	CFArrayRef originalImages = oldCPBitmapCreateImagesFromPath(path, icons, arg2, arg3);
 	if (originalImages != nil && *icons != nil && [*icons isKindOfClass:[NSArray class]]){
 		NSBundle *bundle = [NSBundle anemoneBundleWithFile:path];
 		if (bundle){
-			NSMutableArray *mutableImages = [originalImages mutableCopy];
-			[originalImages release];
-			originalImages = mutableImages;
+			CFMutableArrayRef mutableImages = CFArrayCreateMutableCopy(kCFAllocatorDefault, 0, originalImages);
 
 			NSArray *keys = (NSArray *)*icons;
 			for (NSString *icon in keys){
@@ -45,8 +43,9 @@ static NSArray *newCPBitmapCreateImagesFromPath(NSString *path, NSObject **icons
 				if (cgImage == nil)
 					continue;
 				NSUInteger index = [keys indexOfObject:icon];
-				[mutableImages replaceObjectAtIndex:index withObject:(id)cgImage];
+				CFArraySetValueAtIndex(mutableImages, index, cgImage);
 			}
+			return mutableImages;
 		}
 	}
 	return originalImages;
@@ -62,18 +61,18 @@ static NSArray *newCPBitmapCreateImagesFromPath(NSString *path, NSObject **icons
 	#ifdef USE_SUBSTITUTE
 		void *appsupport = dlopen("/System/Library/PrivateFrameworks/AppSupport.framework/AppSupport", RTLD_NOW);
 		*(void **)(&anem_CPBitmapCreateImagesFromPath) = dlsym(appsupport, "CPBitmapCreateImagesFromPath");
-		struct substitute_function_hook hook = {(void *)anem_CPBitmapCreateImagesFromPath, (void **)&newCPBitmapCreateImagesFromPath, (void **)&oldCPBitmapCreateImagesFromPath};
+		struct substitute_function_hook hook = {(void *)anem_CPBitmapCreateImagesFromPath, (void **)&CPBitmapCreateImagesFromPath_new, (void **)&oldCPBitmapCreateImagesFromPath};
 		substitute_hook_functions(&hook, 1, NULL, SUBSTITUTE_NO_THREAD_SAFETY);
 	#else
 		dlopen("/System/Library/PrivateFrameworks/AppSupport.framework/AppSupport", RTLD_NOW);
 		rebind_symbols((struct rebinding[1]){
-			{"CPBitmapCreateImagesFromPath", (void *)newCPBitmapCreateImagesFromPath, (void **)&oldCPBitmapCreateImagesFromPath}
+			{"CPBitmapCreateImagesFromPath", (void *)CPBitmapCreateImagesFromPath_new, (void **)&oldCPBitmapCreateImagesFromPath}
 		},1);
 	#endif
 #else
 		void *appsupport = dlopen("/System/Library/PrivateFrameworks/AppSupport.framework/AppSupport", RTLD_NOW);
 		*(void **)(&anem_CPBitmapCreateImagesFromPath) = dlsym(appsupport, "CPBitmapCreateImagesFromPath");
-		MSHookFunction((void *)anem_CPBitmapCreateImagesFromPath, (void **)&newCPBitmapCreateImagesFromPath, (void **)&oldCPBitmapCreateImagesFromPath);
+		MSHookFunction((void *)anem_CPBitmapCreateImagesFromPath, (void **)&CPBitmapCreateImagesFromPath_new, (void **)&oldCPBitmapCreateImagesFromPath);
 #endif
 	}
 }
