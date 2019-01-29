@@ -1,6 +1,8 @@
 #import "../core/ANEMSettingsManager.h"
 #include <sys/types.h>
 #include <sys/sysctl.h>
+#include <dlfcn.h>
+#include <substitute.h>
 
 static BOOL IBThemesLoaded = NO;
 static NSMutableArray *IBActiveThemes = nil;
@@ -15,6 +17,11 @@ static NSDictionary *IBActiveOverrides = nil;
 #endif
 #pragma clang diagnostic pop
 #define overridesFilePath [HOMEDIR stringByAppendingPathComponent:@"Library/Preferences/com.anemoneteam.anemoneiconsoverride.plist"]
+
+static BOOL OverlayLoaded = NO;
+static CGImageRef OverlayImage = nil;
+static CGImageRef UnderlayImage = nil;
+static CGImageRef UnderlayImageSpringBoard = nil;
 
 @interface IBTheme : NSObject
 
@@ -38,6 +45,11 @@ static NSDictionary *IBActiveOverrides = nil;
     IBActiveThemes = nil;
 
     IBActiveOverrides = nil;
+
+    OverlayLoaded = NO;
+    OverlayImage = nil;
+    UnderlayImage = nil;
+    UnderlayImageSpringBoard = nil;
 
     ANEMSettingsManager *settingsManager = [%c(ANEMSettingsManager) sharedManager];
     NSArray *themes = [settingsManager themeSettings];
@@ -152,11 +164,6 @@ NSString *IBGetThemedIconWithPrefix(NSString *displayIdentifier, NSString *suffi
     }
     return nil;
 }
-
-static BOOL OverlayLoaded = NO;
-static CGImageRef OverlayImage = nil;
-static CGImageRef UnderlayImage = nil;
-static CGImageRef UnderlayImageSpringBoard = nil;
 
 static void LoadOverlayImage(){
     if (OverlayLoaded)
@@ -373,10 +380,14 @@ CGImageRef newLICreateIconForImages(CFArrayRef images, int variant, int precompo
     IBActiveOverrides = nil;
     IBThemesLoaded = NO;
 	%init();
-	MSHookFunction((void *)&CGImageSourceCreateWithURL, (void **)&newCGImageSourceCreateWithURL, (void **)&oldCGImageSourceCreateWithURL);
-	MSHookFunction((void *)&CFBundleCopyResourceURL, (void **)&newCFBundleCopyResourceURL, (void **)&oldCFBundleCopyResourceURL);
-	MSHookFunction((void *)&CFBundleCopyResourceURLForLocalization, (void **)&newCFBundleCopyResourceURLForLocalization, (void **)&oldCFBundleCopyResourceURLForLocalization);
-    MSHookFunction((void *)&CGContextSetFillColor, (void **)&newCGContextSetFillColor, (void **)&oldCGContextSetFillColor);
 
-    MSHookFunction((void *)&LICreateIconForImages, (void **)&newLICreateIconForImages, (void **)&oldLICreateIconForImages);
+    struct substitute_function_hook hook[5] = {
+        {(void *)&CGImageSourceCreateWithURL, (void **)&newCGImageSourceCreateWithURL, (void **)&oldCGImageSourceCreateWithURL},
+        {(void *)&CFBundleCopyResourceURL, (void **)&newCFBundleCopyResourceURL, (void **)&oldCFBundleCopyResourceURL},
+        {(void *)&CFBundleCopyResourceURLForLocalization, (void **)&newCFBundleCopyResourceURLForLocalization, (void **)&oldCFBundleCopyResourceURLForLocalization},
+        {(void *)&CGContextSetFillColor, (void **)&newCGContextSetFillColor, (void **)&oldCGContextSetFillColor},
+
+        {(void *)&LICreateIconForImages, (void **)&newLICreateIconForImages, (void **)&oldLICreateIconForImages}
+    };
+    substitute_hook_functions(hook, 5, NULL, SUBSTITUTE_NO_THREAD_SAFETY);
 }

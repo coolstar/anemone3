@@ -1,14 +1,5 @@
-#ifdef NO_SUBSTRATE
-	#ifdef USE_SUBSTITUTE
-		#import <substitute.h>
-		#import <dlfcn.h>
-	#else
-		#import "../common/fishhook.h"
-		#import <dlfcn.h>
-	#endif
-#else
-#import <substrate.h>
-#endif
+#import <substitute.h>
+#import <dlfcn.h>
 
 @interface UIImage(bundle)
 + (UIImage *)imageNamed:(NSString *)name inBundle:(NSBundle *)bundle;
@@ -57,22 +48,9 @@ static CFArrayRef CPBitmapCreateImagesFromPath_new(NSString *path, NSObject **ic
         	dlopen("/usr/lib/TweakInject/AnemoneCore.dylib",RTLD_LAZY);
     	}
 
-#ifdef NO_SUBSTRATE
-	#ifdef USE_SUBSTITUTE
 		void *appsupport = dlopen("/System/Library/PrivateFrameworks/AppSupport.framework/AppSupport", RTLD_NOW);
 		*(void **)(&anem_CPBitmapCreateImagesFromPath) = dlsym(appsupport, "CPBitmapCreateImagesFromPath");
 		struct substitute_function_hook hook = {(void *)anem_CPBitmapCreateImagesFromPath, (void **)&CPBitmapCreateImagesFromPath_new, (void **)&oldCPBitmapCreateImagesFromPath};
 		substitute_hook_functions(&hook, 1, NULL, SUBSTITUTE_NO_THREAD_SAFETY);
-	#else
-		dlopen("/System/Library/PrivateFrameworks/AppSupport.framework/AppSupport", RTLD_NOW);
-		rebind_symbols((struct rebinding[1]){
-			{"CPBitmapCreateImagesFromPath", (void *)CPBitmapCreateImagesFromPath_new, (void **)&oldCPBitmapCreateImagesFromPath}
-		},1);
-	#endif
-#else
-		void *appsupport = dlopen("/System/Library/PrivateFrameworks/AppSupport.framework/AppSupport", RTLD_NOW);
-		*(void **)(&anem_CPBitmapCreateImagesFromPath) = dlsym(appsupport, "CPBitmapCreateImagesFromPath");
-		MSHookFunction((void *)anem_CPBitmapCreateImagesFromPath, (void **)&CPBitmapCreateImagesFromPath_new, (void **)&oldCPBitmapCreateImagesFromPath);
-#endif
 	}
 }

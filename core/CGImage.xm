@@ -1,19 +1,8 @@
 #import "ANEMSettingsManager.h"
 #import "Bundle.h"
-#ifdef NO_SUBSTRATE
-	#ifdef USE_SUBSTITUTE
-		#import <substitute.h>
-		#import <dlfcn.h>
-	#else
-		#import "../common/fishhook.h"
-		#import <dlfcn.h>
-	#endif
-#else
-#import <substrate.h>
-#endif
+#import <substitute.h>
 
 extern "C" {
-	void MSHookFunction(void *symbol, void *hook, void **old);
 	CGImageRef *CGImageSourceCreateWithFile(NSString *path, NSDictionary *options);
 }
 
@@ -46,22 +35,10 @@ CGImageRef *newCGImageSourceCreateWithURL(NSURL *url, NSDictionary *options){
 
 %ctor {
 	if (![[[NSBundle mainBundle] bundleIdentifier] isEqualToString:@"org.coolstar.anemone"]){
-#ifdef NO_SUBSTRATE
-		#ifdef USE_SUBSTITUTE
-			struct substitute_function_hook hook[2] = {
-				{(void *)&CGImageSourceCreateWithFile, (void **)&newCGImageSourceCreateWithFile, (void **)&oldCGImageSourceCreateWithFile},
-				{(void *)&CGImageSourceCreateWithURL, (void **)&newCGImageSourceCreateWithURL, (void **)&oldCGImageSourceCreateWithURL}
-			};
-			substitute_hook_functions(hook, 2, NULL, SUBSTITUTE_NO_THREAD_SAFETY);
-		#else
-			rebind_symbols((struct rebinding[2]){
-				{"CGImageSourceCreateWithFile", (void *)newCGImageSourceCreateWithFile, (void **)&oldCGImageSourceCreateWithFile},
-				{"CGImageSourceCreateWithURL", (void *)newCGImageSourceCreateWithURL, (void **)&oldCGImageSourceCreateWithURL}
-			},2);
-		#endif
-#else
-		MSHookFunction((void *)&CGImageSourceCreateWithFile, (void **)&newCGImageSourceCreateWithFile, (void **)&oldCGImageSourceCreateWithFile);
-		MSHookFunction((void *)&CGImageSourceCreateWithURL, (void **)&newCGImageSourceCreateWithURL, (void **)&oldCGImageSourceCreateWithURL);
-#endif
+		struct substitute_function_hook hook[2] = {
+			{(void *)&CGImageSourceCreateWithFile, (void **)&newCGImageSourceCreateWithFile, (void **)&oldCGImageSourceCreateWithFile},
+			{(void *)&CGImageSourceCreateWithURL, (void **)&newCGImageSourceCreateWithURL, (void **)&oldCGImageSourceCreateWithURL}
+		};
+		substitute_hook_functions(hook, 2, NULL, SUBSTITUTE_NO_THREAD_SAFETY);
 	}
 }

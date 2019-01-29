@@ -19,7 +19,10 @@
 		_CGImageHookEnabled = NO;
 
 		if (!_userDefaults){
-			_userDefaults = [[NSUserDefaults alloc] initWithSuiteName:@"com.anemoneteam.anemone"];
+			if ([[[NSBundle mainBundle] bundleIdentifier] isEqualToString:@"com.anemoneteam.anemone"])
+				_userDefaults = [[NSUserDefaults alloc] init];
+			else
+				_userDefaults = [[NSUserDefaults alloc] initWithSuiteName:@"com.anemoneteam.anemone"];
 		}
 	}
 	return self;
@@ -95,6 +98,11 @@
 		_themeSettings = themes;
 	}
 	return _themeSettings;
+}
+
+- (void)forceReloadNow {
+    _themeSettings = nil;
+    [self themeSettings];
 }
 
 - (NSInteger)userInterfaceIdiom {

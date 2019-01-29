@@ -14,6 +14,7 @@
 + (instancetype)sharedManager;
 - (NSArray *)themeSettings;
 - (NSString *)themesDir;
+- (void)forceReloadNow;
 
 - (BOOL)onlyLoadThemedCGImages;
 - (void)setOnlyLoadThemedCGImages:(BOOL)load;
