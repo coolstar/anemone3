@@ -391,7 +391,6 @@ static NSUInteger CMRParseHex(NSString *str, BOOL repeated)
     CGFloat red, green, blue;
     if (hex.length == 6) {
         // Parse 2 chars per component
-        NSLog(@"%@",@"Parsing 6 char hex.");
         red   = CMRParseHex([hex substringWithRange:NSMakeRange(0, 2)], NO) / 255.0;
         green = CMRParseHex([hex substringWithRange:NSMakeRange(2, 2)], NO) / 255.0;
         blue  = CMRParseHex([hex substringWithRange:NSMakeRange(4, 2)], NO) / 255.0;

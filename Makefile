@@ -5,8 +5,8 @@ export ARCHS = arm64
 include $(THEOS)/makefiles/common.mk
 
 TWEAK_NAME = Anemone
-Anemone_FILES = Calendar.xm UIColor+HTMLColors.mm
-Anemone_FRAMEWORKS = UIKit CoreGraphics QuartzCore
+Anemone_FILES = Calendar.xm AppNotify.x UIColor+HTMLColors.mm
+Anemone_FRAMEWORKS = UIKit CoreGraphics QuartzCore MobileCoreServices
 Anemone_CFLAGS = -DBOOTSTRAP_DIR='"$(BOOTSTRAP_DIR)"' -fobjc-arc
 ifeq ($(ENABLE_WATERMARK), 1)
 	Anemone_CFLAGS += -DENABLE_WATERMARK

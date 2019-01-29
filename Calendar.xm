@@ -29,8 +29,6 @@ static CGFloat dayShadowBlurRadius = 0.0f;
 static NSString *dayTextCase = nil;
 static UIColor *dayShadowColor = nil;
 
-static NSMutableArray *themesToShame = nil;
-
 static void getCalendarSettings(){
 	dateSettings = nil;
 	daySettings = nil;
@@ -52,11 +50,6 @@ static void getCalendarSettings(){
 		if (!(dateSettings == nil || [dateSettings isKindOfClass:[NSDictionary class]]) || !(daySettings == nil || [daySettings isKindOfClass:[NSDictionary class]])){
 			dateSettings = nil;
 			daySettings = nil;
-
-			if (themesToShame == nil){
-				themesToShame = [[NSMutableArray alloc] init];
-			}
-			[themesToShame addObject:theme];
 		}
 	}
 }
@@ -89,40 +82,40 @@ static void loadCalendarSettings(){
 	dayFont = @".SFUIText-Medium";
 	dayShadowColor = [UIColor clearColor];
 
-	if ([dateSettings objectForKey:@"TextXoffset"])
+	if ([[dateSettings objectForKey:@"TextXoffset"] isKindOfClass:[NSNumber class]])
 		dateXoffset = [[dateSettings objectForKey:@"TextXoffset"] floatValue];
-	if ([dateSettings objectForKey:@"TextYoffset"])
+	if ([[dateSettings objectForKey:@"TextYoffset"] isKindOfClass:[NSNumber class]])
 		dateYoffset = [[dateSettings objectForKey:@"TextYoffset"] floatValue];
-	if ([dateSettings objectForKey:@"TextColor"])
+	if ([[dateSettings objectForKey:@"TextColor"] isKindOfClass:[NSString class]])
 		dateTextColor = [UIColor anem_colorWithCSS:[dateSettings objectForKey:@"TextColor"]];
-	if ([dateSettings objectForKey:@"TextCase"])
+	if ([[dateSettings objectForKey:@"TextCase"] isKindOfClass:[NSString class]])
 		dateTextCase = [[dateSettings objectForKey:@"TextCase"] lowercaseString];
-	if ([dateSettings objectForKey:@"ShadowXoffset"])
+	if ([[dateSettings objectForKey:@"ShadowXoffset"] isKindOfClass:[NSNumber class]])
 		dateShadowXoffset = [[dateSettings objectForKey:@"ShadowXoffset"] floatValue];
-	if ([dateSettings objectForKey:@"ShadowYoffset"])
+	if ([[dateSettings objectForKey:@"ShadowYoffset"] isKindOfClass:[NSNumber class]])
 		dateShadowYoffset = [[dateSettings objectForKey:@"ShadowYoffset"] floatValue];
-	if ([dateSettings objectForKey:@"ShadowBlurRadius"])
+	if ([[dateSettings objectForKey:@"ShadowBlurRadius"] isKindOfClass:[NSNumber class]])
 		dateShadowBlurRadius = [[dateSettings objectForKey:@"ShadowBlurRadius"] floatValue];
-	if ([dateSettings objectForKey:@"ShadowColor"])
+	if ([[dateSettings objectForKey:@"ShadowColor"] isKindOfClass:[NSString class]])
 		dateShadowColor = [UIColor anem_colorWithCSS:[dateSettings objectForKey:@"ShadowColor"]];
 
-	if ([daySettings objectForKey:@"FontName"])
+	if ([[daySettings objectForKey:@"FontName"] isKindOfClass:[NSString class]])
 		dayFont = [daySettings objectForKey:@"FontName"];
-	if ([daySettings objectForKey:@"FontSize"])
+	if ([[daySettings objectForKey:@"FontSize"] isKindOfClass:[NSNumber class]])
 		dayFontSize = [[daySettings objectForKey:@"FontSize"] floatValue];
-	if ([daySettings objectForKey:@"TextCase"])
+	if ([[daySettings objectForKey:@"TextCase"] isKindOfClass:[NSString class]])
 		dayTextCase = [[daySettings objectForKey:@"TextCase"] lowercaseString];
-	if ([daySettings objectForKey:@"TextXoffset"])
+	if ([[daySettings objectForKey:@"TextXoffset"] isKindOfClass:[NSNumber class]])
 		dayXoffset = [[daySettings objectForKey:@"TextXoffset"] floatValue];
-	if ([daySettings objectForKey:@"TextYoffset"])
+	if ([[daySettings objectForKey:@"TextYoffset"] isKindOfClass:[NSNumber class]])
 		dayYoffset = [[daySettings objectForKey:@"TextYoffset"] floatValue];
-	if ([daySettings objectForKey:@"ShadowXoffset"])
+	if ([[daySettings objectForKey:@"ShadowXoffset"] isKindOfClass:[NSNumber class]])
 		dayShadowXoffset = [[daySettings objectForKey:@"ShadowXoffset"] floatValue];
-	if ([daySettings objectForKey:@"ShadowYoffset"])
+	if ([[daySettings objectForKey:@"ShadowYoffset"] isKindOfClass:[NSNumber class]])
 		dayShadowYoffset = [[daySettings objectForKey:@"ShadowYoffset"] floatValue];
-	if ([daySettings objectForKey:@"ShadowBlurRadius"])
+	if ([[daySettings objectForKey:@"ShadowBlurRadius"] isKindOfClass:[NSNumber class]])
 		dayShadowBlurRadius = [[daySettings objectForKey:@"ShadowBlurRadius"] floatValue];
-	if ([daySettings objectForKey:@"ShadowColor"])
+	if ([[daySettings objectForKey:@"ShadowColor"] isKindOfClass:[NSString class]])
 		dayShadowColor = [UIColor anem_colorWithCSS:[daySettings objectForKey:@"ShadowColor"]];
 
 	if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad){
@@ -164,9 +157,9 @@ static void loadCalendarSettings(){
 		dateFont = [[self numberFont] fontName];
 		dateFontSize = [[self numberFont] pointSize];
 	}
-	if ([dateSettings objectForKey:@"FontName"])
+	if ([[dateSettings objectForKey:@"FontName"] isKindOfClass:[NSString class]])
 		dateFont = [dateSettings objectForKey:@"FontName"];
-	if ([dateSettings objectForKey:@"FontSize"])
+	if ([[dateSettings objectForKey:@"FontSize"] isKindOfClass:[NSNumber class]])
 		dateFontSize = [[dateSettings objectForKey:@"FontSize"] floatValue];
 
 	NSDate *date = [NSDate date];
@@ -190,7 +183,7 @@ static void loadCalendarSettings(){
 	UIColor *dayTextColor = [UIColor redColor];
 	if ([self respondsToSelector:@selector(colorForDayOfWeek)])
 		dayTextColor = [self colorForDayOfWeek];
-	if ([daySettings objectForKey:@"TextColor"])
+	if ([[daySettings objectForKey:@"TextColor"] isKindOfClass:[NSString class]])
 		dayTextColor = [UIColor anem_colorWithCSS:[daySettings objectForKey:@"TextColor"]];
 
 	[dateFormatter setDateFormat:@"EEEE"];
@@ -209,25 +202,6 @@ static void loadCalendarSettings(){
 
 	CGContextSetAlpha(ctx, CGColorGetAlpha(dayTextColor.CGColor));
 	[dayOfWeek drawAtPoint:CGPointMake(dayXoffset + ((imageSize.width-size.width)/2.0f),dayYoffset) withAttributes:@{NSFontAttributeName:dayOfWeekFont, NSForegroundColorAttributeName:dayTextColor}];
-}
-%end
-
-%hook SBLockScreenViewController
--(void)finishUIUnlockFromSource:(int)source {
-	%orig;
-	if (!themesToShame)
-		return;
-	NSString *themesToShameString = [themesToShame componentsJoinedByString:@","];
-	NSString *messageString = [NSString stringWithFormat:@"The following theme(s) have bad Calendar icon settings in their Info.plist file: %@. Their calendar settings have been disabled. Please contact the theme designer to fix it. You may delete their Info.plist files (or disable the themes) to remove this error message.",themesToShameString];
-#pragma clang diagnostic push 
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-	UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Crash Prevented"
-		message:messageString
-		delegate:nil
-		cancelButtonTitle:@"Ok"
-		otherButtonTitles:nil];
-	[alert show];
-#pragma clang diagnostic pop
 }
 %end
 
