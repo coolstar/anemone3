@@ -274,6 +274,9 @@ CFURLRef newCFBundleCopyResourceURL(CFBundleRef cfbundle, NSString *resourceName
         if ([bundleIdentifier isEqualToString:@"com.anemoneteam.anemone"])
             bundleIdentifier = @"com.anemonetheming.anemone";
 
+        if ([bundleIdentifier isEqualToString:@"org.coolstar.electra1141"])
+            bundleIdentifier = @"org.coolstar.electra1131";
+
 		NSString *filename = IBGetThemedIconWithPrefix(bundleIdentifier, [resourceName substringFromIndex:anemPrefix.length]);
 		if (filename)
 			return CFURLCopyAbsoluteURL((CFURLRef)[NSURL fileURLWithPath:filename]);
@@ -291,6 +294,9 @@ CFURLRef newCFBundleCopyResourceURLForLocalization(CFBundleRef cfbundle, NSStrin
 		NSString *bundleIdentifier = (NSString *)CFBundleGetIdentifier(cfbundle);
         if ([bundleIdentifier isEqualToString:@"com.anemoneteam.anemone"])
             bundleIdentifier = @"com.anemonetheming.anemone";
+
+        if ([bundleIdentifier isEqualToString:@"org.coolstar.electra1141"])
+            bundleIdentifier = @"org.coolstar.electra1131";
 
 		NSString *filename = IBGetThemedIconWithPrefix(bundleIdentifier, [resourceName substringFromIndex:anemPrefix.length]);
 		if (filename)

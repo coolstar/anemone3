@@ -15,6 +15,10 @@ static void checkBundle(NSString *bundleIdentifier, NSDictionary *iconNames, NSM
         displayIdentifier = @"com.anemonetheming.anemone";
     }
 
+    if ([displayIdentifier isEqualToString:@"org.coolstar.electra1141"]){
+    	displayIdentifier = @"org.coolstar.electra1131";
+	}
+
     UIImage *icon = nil;
     for (NSString *theme in themes){
 	    NSString *ibLargeThemePath = [NSString stringWithFormat:@"%@/%@/IconBundles/%@-large.png", themesDir, theme, displayIdentifier];
