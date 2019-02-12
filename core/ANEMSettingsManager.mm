@@ -103,6 +103,8 @@
 - (void)forceReloadNow {
     _themeSettings = nil;
     [self themeSettings];
+
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"AnemoneReloadNotification" object:nil];
 }
 
 - (NSInteger)userInterfaceIdiom {
