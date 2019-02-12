@@ -5,6 +5,10 @@
 - (void)setAlternateIconName:(NSString *)name withResult:(void (^)(bool success))result;
 @end
 
+@interface IBTheme : NSObject
++ (void)resetThemes;
+@end
+
 static void checkBundle(NSString *bundleIdentifier, NSDictionary *iconNames, NSMutableDictionary *changesRequired){
 	NSArray *themes = [[%c(ANEMSettingsManager) sharedManager] themeSettings];
 	NSString *themesDir = [[%c(ANEMSettingsManager) sharedManager] themesDir];
@@ -44,6 +48,11 @@ static void checkBundle(NSString *bundleIdentifier, NSDictionary *iconNames, NSM
 	}
 }
 
+static void forceReloadNow(){
+	[[%c(ANEMSettingsManager) sharedManager] forceReloadNow];
+	[%c(IBTheme) resetThemes];
+}
+
 %hook NSNotificationCenter
 + (void)initialize {
 	%orig;
@@ -73,5 +82,7 @@ static void checkBundle(NSString *bundleIdentifier, NSDictionary *iconNames, NSM
     		}
     	}
     }];
+
+    CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, (CFNotificationCallback)forceReloadNow, CFSTR("com.anemoneteam.anemone/reload"), NULL, CFNotificationSuspensionBehaviorCoalesce);
 }
 %end
