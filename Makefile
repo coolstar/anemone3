@@ -11,9 +11,7 @@ Anemone_CFLAGS = -DBOOTSTRAP_DIR='"$(BOOTSTRAP_DIR)"' -fobjc-arc
 ifeq ($(ENABLE_WATERMARK), 1)
 	Anemone_CFLAGS += -DENABLE_WATERMARK
 endif
-ifeq ($(NO_SUBSTRATE), 1)
-	Anemone_USE_SUBSTRATE=0
-endif
+Anemone_USE_SUBSTRATE=0
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 

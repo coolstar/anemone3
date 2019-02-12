@@ -4,5 +4,6 @@
 			lsd,
 			lsdiconservice,
 		);
+		Bundles = ( "com.apple.springboard" );
 	};
 }

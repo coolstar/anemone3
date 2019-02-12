@@ -1,7 +1,7 @@
 include $(THEOS)/makefiles/common.mk
 
 TWEAK_NAME = AnemoneIcons
-AnemoneIcons_FILES = Tweak.x
+AnemoneIcons_FILES = Tweak.x Clock.xm
 AnemoneIcons_FRAMEWORKS = MobileCoreServices
 AnemoneIcons_PRIVATE_FRAMEWORKS = MobileIcons
 AnemoneIcons_CFLAGS = -fobjc-arc

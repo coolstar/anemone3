@@ -4,6 +4,7 @@ TWEAK_NAME = AnemoneCore
 AnemoneCore_FILES = ANEMSettingsManager.mm Bundle.m CGImage.xm
 AnemoneCore_FRAMEWORKS = CoreGraphics ImageIO
 AnemoneCore_CFLAGS = -fobjc-arc
+AnemoneCore_USE_SUBSTRATE=0
 
 AnemoneCore_LDFLAGS = -Wl,-segalign,4000 -L../common -lsubstitute
 

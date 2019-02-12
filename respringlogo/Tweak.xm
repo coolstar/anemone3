@@ -5,6 +5,7 @@ the generation of a class list and an automatic constructor.
 */
 
 #import "../core/ANEMSettingsManager.h"
+#import <dlfcn.h>
 
 %ctor {
 	if (kCFCoreFoundationVersionNumber > MaxSupportedCFVersion)

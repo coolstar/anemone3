@@ -33,7 +33,10 @@ static NSMutableDictionary *cachedBundles = nil;
 	NSString *bundleIdentifier = [self bundleIdentifier];
 
 	NSArray *themes = [[ANEMSettingsManager sharedManager] themeSettings];
-	NSArray *searchExtensions = @[@"@3x.png", @"@2x.png", @".png"];
+	NSArray *searchExtensions = @[@"@3x.png", @"@3x~iphone.png", @"@2x.png", @"@2x~iphone.png", @".png", @"~iphone.png"];
+	if ([[ANEMSettingsManager sharedManager] userInterfaceIdiom] == UIUserInterfaceIdiomPad){
+		searchExtensions = @[@"@3x.png", @"@2x~ipad.png", @"@2x.png", @"~ipad.png", @".png"];
+	}
 
 	for (NSString *theme in themes){
 		NSString *path = [NSString stringWithFormat:@"%@/%@/Bundles/%@/%@.png",themesDir,theme,bundleIdentifier,image];
@@ -58,11 +61,7 @@ static NSMutableDictionary *cachedBundles = nil;
 
 	NSString *themesDir = [[ANEMSettingsManager sharedManager] themesDir];
 
-	if ([self hasPrefix:@"/var/stash/anemonecache"])
-		return self;
 	if ([self hasPrefix:themesDir])
-		return self;
-	if ([self hasPrefix:@"/var/mobile/Library/Caches"])
 		return self;
 	if ([self hasSuffix:@".artwork"])
 		return self;
