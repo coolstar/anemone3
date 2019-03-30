@@ -6,10 +6,10 @@ extern "C" {
 	CGImageRef *CGImageSourceCreateWithFile(NSString *path, NSDictionary *options);
 }
 
-CGImageRef *(*oldCGImageSourceCreateWithFile)(NSString *, NSDictionary*);
-CGImageRef *(*oldCGImageSourceCreateWithURL)(NSURL *, NSDictionary*);
+static CGImageRef *(*oldCGImageSourceCreateWithFile)(NSString *, NSDictionary*);
+static CGImageRef *(*oldCGImageSourceCreateWithURL)(NSURL *, NSDictionary*);
 
-CGImageRef *newCGImageSourceCreateWithFile(NSString *path, NSDictionary *options){
+static CGImageRef *newCGImageSourceCreateWithFile(NSString *path, NSDictionary *options){
 	if ([[ANEMSettingsManager sharedManager] isCGImageHookEnabled]){
 		NSString *themedPath = [path anemoneThemedPath];
 		if ([[ANEMSettingsManager sharedManager] onlyLoadThemedCGImages]){
@@ -21,7 +21,7 @@ CGImageRef *newCGImageSourceCreateWithFile(NSString *path, NSDictionary *options
 	return oldCGImageSourceCreateWithFile(path, options);
 }
 
-CGImageRef *newCGImageSourceCreateWithURL(NSURL *url, NSDictionary *options){
+static CGImageRef *newCGImageSourceCreateWithURL(NSURL *url, NSDictionary *options){
 	if ([[ANEMSettingsManager sharedManager] isCGImageHookEnabled]){
 		if ([url isFileURL])
 			url = [NSURL fileURLWithPath:[[url path] anemoneThemedPath]];

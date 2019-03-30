@@ -120,7 +120,7 @@ static CGImageRef UnderlayImageSpringBoard = nil;
 }
 %end
 
-NSString *IBGetThemedIconWithPrefix(NSString *displayIdentifier, NSString *suffix){
+static NSString *IBGetThemedIconWithPrefix(NSString *displayIdentifier, NSString *suffix){
 	if (!IBThemesLoaded){
         [IBTheme resetThemes];
         IBThemesLoaded = YES;
@@ -256,15 +256,15 @@ static void LoadOverlayImage(){
     OverlayLoaded = YES;
 }
 
-CGImageRef *(*oldCGImageSourceCreateWithURL)(NSURL *, NSDictionary*);
+static CGImageRef *(*oldCGImageSourceCreateWithURL)(NSURL *, NSDictionary*);
 
-CGImageRef *newCGImageSourceCreateWithURL(NSURL *url, NSDictionary *options){
+static CGImageRef *newCGImageSourceCreateWithURL(NSURL *url, NSDictionary *options){
 	return oldCGImageSourceCreateWithURL(url, options);
 }
 
-CFURLRef (*oldCFBundleCopyResourceURL)(CFBundleRef, NSString *, NSString *, NSString *);
+static CFURLRef (*oldCFBundleCopyResourceURL)(CFBundleRef, NSString *, NSString *, NSString *);
 
-CFURLRef newCFBundleCopyResourceURL(CFBundleRef cfbundle, NSString *resourceName, NSString *resourceType, NSString *subDirName){
+static CFURLRef newCFBundleCopyResourceURL(CFBundleRef cfbundle, NSString *resourceName, NSString *resourceType, NSString *subDirName){
 	//NSBundle *bundle = (NSBundle *)cfbundle;
 
 	NSString *anemPrefix = @"__ANEM_THEMEDICON";
@@ -284,9 +284,9 @@ CFURLRef newCFBundleCopyResourceURL(CFBundleRef cfbundle, NSString *resourceName
 	return oldCFBundleCopyResourceURL(cfbundle, resourceName, resourceType, subDirName);
 }
 
-CFURLRef (*oldCFBundleCopyResourceURLForLocalization)(CFBundleRef, NSString *, NSString *, NSString *, NSString *);
+static CFURLRef (*oldCFBundleCopyResourceURLForLocalization)(CFBundleRef, NSString *, NSString *, NSString *, NSString *);
 
-CFURLRef newCFBundleCopyResourceURLForLocalization(CFBundleRef cfbundle, NSString *resourceName, NSString *resourceType, NSString *subDirName, NSString *localizationName){
+static CFURLRef newCFBundleCopyResourceURLForLocalization(CFBundleRef cfbundle, NSString *resourceName, NSString *resourceType, NSString *subDirName, NSString *localizationName){
 	//NSBundle *bundle = (NSBundle *)cfbundle;
 	NSString *anemPrefix = @"__ANEM_THEMEDICON";
 
@@ -307,9 +307,9 @@ CFURLRef newCFBundleCopyResourceURLForLocalization(CFBundleRef cfbundle, NSStrin
 
 static bool isRenderingIcon = false;
 
-void (*oldCGContextSetFillColor)(CGContextRef, CGFloat *);
+static void (*oldCGContextSetFillColor)(CGContextRef, CGFloat *);
 
-void newCGContextSetFillColor(CGContextRef c, CGFloat *components){
+static void newCGContextSetFillColor(CGContextRef c, CGFloat *components){
     if (isRenderingIcon) {
         CGFloat newComponents[4] = {0, 0, 0, 0};
         oldCGContextSetFillColor(c, newComponents);
@@ -320,9 +320,9 @@ void newCGContextSetFillColor(CGContextRef c, CGFloat *components){
 
 CGImageRef LICreateIconForImages(CFArrayRef, int, int);
 
-CGImageRef (*oldLICreateIconForImages)(CFArrayRef, int, int);
+static CGImageRef (*oldLICreateIconForImages)(CFArrayRef, int, int);
 
-CGImageRef newLICreateIconForImages(CFArrayRef images, int variant, int precomposed){
+static CGImageRef newLICreateIconForImages(CFArrayRef images, int variant, int precomposed){
     isRenderingIcon = true;
 
     /* Variant List (Home Screen)

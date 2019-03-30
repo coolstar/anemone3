@@ -11,8 +11,8 @@
 /*#define log_data(fmt, ...) \
             do {FILE *f = fopen("/var/mobile/pref-log.txt", "a"); fprintf(f, fmt, __VA_ARGS__);fclose(f);} while(0)*/
 
-CFArrayRef (*anem_CPBitmapCreateImagesFromPath)(NSString *, NSObject**, void*, void*);
-CFArrayRef (*oldCPBitmapCreateImagesFromPath)(NSString *, NSObject**, void*, void*);
+static CFArrayRef (*anem_CPBitmapCreateImagesFromPath)(NSString *, NSObject**, void*, void*);
+static CFArrayRef (*oldCPBitmapCreateImagesFromPath)(NSString *, NSObject**, void*, void*);
 
 static CFArrayRef CPBitmapCreateImagesFromPath_new(NSString *path, NSObject **icons, void *arg2, void *arg3) {
 	CFArrayRef originalImages = oldCPBitmapCreateImagesFromPath(path, icons, arg2, arg3);

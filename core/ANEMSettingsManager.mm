@@ -75,13 +75,15 @@
 	if (kCFCoreFoundationVersionNumber > MaxSupportedCFVersion)
 		return nil;
 
-	if (_userDefaults){
-		NSArray *themes = [_userDefaults arrayForKey:@"settingsPacked"];
-		if (themes)
-			return themes;
-	}
-
 	if (!_themeSettings){
+		if (_userDefaults){
+			NSArray *themes = [_userDefaults arrayForKey:@"settingsPacked"];
+			if (themes){
+				_themeSettings = themes;
+				return themes;
+			}
+		}
+
 		NSMutableArray *themes = [[NSMutableArray alloc] init];
 
 		NSDictionary *rawSettings = [NSDictionary dictionaryWithContentsOfFile:preferenceFilePath];

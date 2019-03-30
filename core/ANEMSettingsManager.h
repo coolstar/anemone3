@@ -1,5 +1,5 @@
 #define SupportsNoExtensionDir YES
-#define MaxSupportedCFVersion 1452.23 // Only support up to iOS 11.3.1
+#define MaxSupportedCFVersion 1561.00 // Only support up to iOS 11.3.1
 
 @interface ANEMSettingsManager : NSObject {
 	NSArray *_themeSettings;
