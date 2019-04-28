@@ -6,7 +6,7 @@ AnemoneCore_FRAMEWORKS = CoreGraphics ImageIO
 AnemoneCore_CFLAGS = -fobjc-arc
 AnemoneCore_USE_SUBSTRATE=0
 
-AnemoneCore_LDFLAGS = -Wl,-segalign,4000 -L../common -lsubstitute
+AnemoneCore_LDFLAGS = -L../common -lsubstitute
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 

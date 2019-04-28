@@ -1,6 +1,6 @@
 THEOS_PACKAGE_DIR_NAME = debs
 TARGET = iphone:clang:latest:11.0
-export ARCHS = arm64
+export ARCHS = arm64 arm64e
 
 include $(THEOS)/makefiles/common.mk
 
