@@ -36,7 +36,7 @@ int run_cmd(const char *cmd)
     pid_t pid;
     const char *argv[] = {"sh", "-c", cmd, NULL};
     int status;
-    status = posix_spawn(&pid, "/bin/sh", NULL, NULL, (char * const *)argv, environ);
+    status = posix_spawn(&pid, "/bin/sh", NULL, NULL, (char * const *)argv, NULL);
     if (status == 0) {
         if (waitpid(pid, &status, 0) != -1) {
             return status;
@@ -79,7 +79,7 @@ int main(int argc, char *argv[]) {
 		BOOL hadError = clearCaches(verbose);
 
 		if (!noRespring) {
-			run_cmd("killall SpringBoard && killall backboardd"); //iOS 7 and lower launchctl doesn't work
+			run_cmd("/usr/bin/sbreload"); //sbreload works with uikittools-ng :)
 		}
 
 		return hadError ? ANEMRecacheExitReasonFailedRemoving : ANEMRecacheExitReasonSuccess;
@@ -100,6 +100,8 @@ void help(char *name) {
 }
 
 BOOL clearCaches(BOOL verbose) {
+	LSApplicationProxy *proxy = [LSApplicationProxy applicationProxyForIdentifier:@"com.apple.Preferences"];
+
 	static NSArray *CacheItems;
 	static dispatch_once_t onceToken;
 	dispatch_once(&onceToken, ^{
@@ -152,7 +154,12 @@ BOOL clearCaches(BOOL verbose) {
 
 	// TODO: allow themes to provide custom cache delete paths
 
-	run_cmd("killall -KILL lsd lsdiconservice");
+	run_cmd("/usr/bin/killall -KILL lsd lsdiconservice");
+
+	if (![[[proxy iconsDictionary] objectForKey:@"CFBundleAlternateIcons"] objectForKey:@"__ANEM__AltIcon"]){
+		run_cmd("/usr/bin/uicache -a");
+	}
+
 
 	return hadError;
 }
