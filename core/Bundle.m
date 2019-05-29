@@ -70,13 +70,13 @@ static NSMutableDictionary *cachedBundles = nil;
 
 	NSString *fullPath = [self stringByResolvingSymlinksInPath];
 	NSString *fileName = [fullPath lastPathComponent];
-	
-	NSBundle *bundle = [NSBundle anemoneBundleWithFile:fullPath];
 	if ([[ANEMSettingsManager sharedManager] masksOnly]){
-		if (![[bundle bundleIdentifier] isEqualToString:@"com.apple.mobileicons.framework"]){
+		if (![fullPath hasPrefix:@"/System/Library/PrivateFrameworks/MobileIcons.framework/"]){
 			return self;
 		}
 	}
+	
+	NSBundle *bundle = [NSBundle anemoneBundleWithFile:fullPath];
 
 	NSString *fileEnding = fileName;
 	if (bundle){
