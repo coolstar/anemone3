@@ -326,11 +326,22 @@ static CGImageRef newLICreateIconForImages(CFArrayRef images, int variant, int p
     isRenderingIcon = true;
 
     /* Variant List (Home Screen)
-    iPhone @2x: 15
+    iPhone @2x: 15 [120x120]
+    iPhone @2x (XR): 79 [128x128]
     iPad @2x: 24
-    iPhone @3x: 32
+    iPhone @3x: 32 [180x180]
+    iPhone @3x (XS Max): 80 [192x192]
     iPad @3x: 24
     */
+
+    if (variant == 80)
+        variant = 32;
+
+    if (variant == 79)
+        variant = 15;
+
+    if (variant == 33)
+        variant = 15;
 
     CGImageRef rawIcon = oldLICreateIconForImages(images, variant, precomposed);
 
