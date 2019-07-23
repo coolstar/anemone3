@@ -262,47 +262,28 @@ static CGImageRef *newCGImageSourceCreateWithURL(NSURL *url, NSDictionary *optio
 	return oldCGImageSourceCreateWithURL(url, options);
 }
 
-static CFURLRef (*oldCFBundleCopyResourceURL)(CFBundleRef, NSString *, NSString *, NSString *);
+CFTypeRef _CFBundleCopyFindResources(CFBundleRef, CFURLRef, CFArrayRef, CFStringRef, CFStringRef, CFStringRef, CFStringRef, Boolean, Boolean, Boolean (^)(CFStringRef, Boolean *));
 
-static CFURLRef newCFBundleCopyResourceURL(CFBundleRef cfbundle, NSString *resourceName, NSString *resourceType, NSString *subDirName){
-	//NSBundle *bundle = (NSBundle *)cfbundle;
+static CFTypeRef (*old_CFBundleCopyFindResources)(CFBundleRef, CFURLRef, CFArrayRef, NSString *, CFStringRef, CFStringRef, CFStringRef, Boolean, Boolean, Boolean (^)(CFStringRef, Boolean *));
 
-	NSString *anemPrefix = @"__ANEM_THEMEDICON";
+static CFTypeRef new_CFBundleCopyFindResources(CFBundleRef bundle, CFURLRef bundleURL, CFArrayRef array, NSString *resourceName, CFStringRef resourceType, CFStringRef subPath, CFStringRef lproj, Boolean returnArray, Boolean localized, Boolean (^predicate)(CFStringRef filename, Boolean *stop)){
+    if (bundleURL == NULL && returnArray == false && predicate == false){
+        NSString *anemPrefix = @"__ANEM_THEMEDICON";
 
-	if ([resourceName hasPrefix:anemPrefix]){
-		NSString *bundleIdentifier = (NSString *)CFBundleGetIdentifier(cfbundle);
-        if ([bundleIdentifier isEqualToString:@"com.anemoneteam.anemone"])
-            bundleIdentifier = @"com.anemonetheming.anemone";
+        if ([resourceName hasPrefix:anemPrefix]){
+            NSString *bundleIdentifier = (NSString *)CFBundleGetIdentifier(bundle);
+            if ([bundleIdentifier isEqualToString:@"com.anemoneteam.anemone"])
+                bundleIdentifier = @"com.anemonetheming.anemone";
 
-        if ([bundleIdentifier isEqualToString:@"org.coolstar.electra1141"])
-            bundleIdentifier = @"org.coolstar.electra1131";
+            if ([bundleIdentifier isEqualToString:@"org.coolstar.electra1141"])
+                bundleIdentifier = @"org.coolstar.electra1131";
 
-		NSString *filename = IBGetThemedIconWithPrefix(bundleIdentifier, [resourceName substringFromIndex:anemPrefix.length]);
-		if (filename)
-			return CFURLCopyAbsoluteURL((CFURLRef)[NSURL fileURLWithPath:filename]);
-	}
-	return oldCFBundleCopyResourceURL(cfbundle, resourceName, resourceType, subDirName);
-}
-
-static CFURLRef (*oldCFBundleCopyResourceURLForLocalization)(CFBundleRef, NSString *, NSString *, NSString *, NSString *);
-
-static CFURLRef newCFBundleCopyResourceURLForLocalization(CFBundleRef cfbundle, NSString *resourceName, NSString *resourceType, NSString *subDirName, NSString *localizationName){
-	//NSBundle *bundle = (NSBundle *)cfbundle;
-	NSString *anemPrefix = @"__ANEM_THEMEDICON";
-
-	if ([resourceName hasPrefix:anemPrefix]){
-		NSString *bundleIdentifier = (NSString *)CFBundleGetIdentifier(cfbundle);
-        if ([bundleIdentifier isEqualToString:@"com.anemoneteam.anemone"])
-            bundleIdentifier = @"com.anemonetheming.anemone";
-
-        if ([bundleIdentifier isEqualToString:@"org.coolstar.electra1141"])
-            bundleIdentifier = @"org.coolstar.electra1131";
-
-		NSString *filename = IBGetThemedIconWithPrefix(bundleIdentifier, [resourceName substringFromIndex:anemPrefix.length]);
-		if (filename)
-			return CFURLCopyAbsoluteURL((CFURLRef)[NSURL fileURLWithPath:filename]);
-	}
-	return oldCFBundleCopyResourceURLForLocalization(cfbundle, resourceName, resourceType, subDirName, localizationName);
+            NSString *filename = IBGetThemedIconWithPrefix(bundleIdentifier, [resourceName substringFromIndex:anemPrefix.length]);
+            if (filename)
+                return CFURLCopyAbsoluteURL((CFURLRef)[NSURL fileURLWithPath:filename]);
+        }
+    }
+    return old_CFBundleCopyFindResources(bundle, bundleURL, array, resourceName, resourceType, subPath, lproj, returnArray, localized, predicate);
 }
 
 static bool isRenderingIcon = false;
@@ -398,13 +379,12 @@ static CGImageRef newLICreateIconForImages(CFArrayRef images, int variant, int p
     IBThemesLoaded = NO;
 	%init();
 
-    struct substitute_function_hook hook[5] = {
+    struct substitute_function_hook hook[4] = {
         {(void *)&CGImageSourceCreateWithURL, (void **)&newCGImageSourceCreateWithURL, (void **)&oldCGImageSourceCreateWithURL},
-        {(void *)&CFBundleCopyResourceURL, (void **)&newCFBundleCopyResourceURL, (void **)&oldCFBundleCopyResourceURL},
-        {(void *)&CFBundleCopyResourceURLForLocalization, (void **)&newCFBundleCopyResourceURLForLocalization, (void **)&oldCFBundleCopyResourceURLForLocalization},
+        {(void *)&_CFBundleCopyFindResources, (void **)&new_CFBundleCopyFindResources, (void **)&old_CFBundleCopyFindResources},
         {(void *)&CGContextSetFillColor, (void **)&newCGContextSetFillColor, (void **)&oldCGContextSetFillColor},
 
         {(void *)&LICreateIconForImages, (void **)&newLICreateIconForImages, (void **)&oldLICreateIconForImages}
     };
-    substitute_hook_functions(hook, 5, NULL, SUBSTITUTE_NO_THREAD_SAFETY);
+    substitute_strerror(substitute_hook_functions(hook, 4, NULL, SUBSTITUTE_NO_THREAD_SAFETY));
 }
