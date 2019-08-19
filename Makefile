@@ -22,5 +22,5 @@ else
 	install.exec "killall SpringBoard"
 endif
 
-SUBPROJECTS = icons#app core recache cardump icons respringlogo preferences
+SUBPROJECTS = app core recache cardump icons respringlogo preferences
 include $(THEOS_MAKE_PATH)/aggregate.mk
