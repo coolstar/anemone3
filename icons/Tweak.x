@@ -94,6 +94,31 @@ static CGImageRef UnderlayImageSpringBoard = nil;
 @end
 
 %hook LSBundleRecordBuilder
+- (NSDictionary *)iconsDictionaryFromDict:(NSDictionary *)dict {
+    NSDictionary *iconDict = %orig;
+
+    if (iconDict){
+        NSMutableDictionary *iconDictMutable = [iconDict mutableCopy];
+        NSMutableDictionary *altIcons = [[iconDictMutable objectForKey:@"CFBundleAlternateIcons"] mutableCopy];
+        if (!altIcons){
+            altIcons = [NSMutableDictionary dictionary];
+        }
+        [altIcons setObject:@{
+            @"CFBundleIconFiles":@[
+                @"__ANEM_THEMEDICON.png",
+                @"__ANEM_THEMEDICON~ipad.png",
+                @"__ANEM_THEMEDICON@2x.png",
+                @"__ANEM_THEMEDICON@2x~ipad.png"
+                ],
+            @"UIPrerenderedIcon":@0
+        } forKey:@"__ANEM__AltIcon"];
+        [iconDictMutable setObject:altIcons forKey:@"CFBundleAlternateIcons"];
+        iconDict = iconDictMutable;
+    }
+
+    return iconDict;
+}
+
 - (NSDictionary *)getIconsDictionaryFromDict:(NSDictionary *)dict {
 	NSDictionary *iconDict = %orig;
 
@@ -290,7 +315,6 @@ static CFURLRef (*oldCFBundleCopyResourceURL)(CFBundleRef, NSString *, NSString 
 
 static CFURLRef newCFBundleCopyResourceURL(CFBundleRef cfbundle, NSString *resourceName, NSString *resourceType, NSString *subDirName){
     //NSBundle *bundle = (NSBundle *)cfbundle;
-
     NSString *anemPrefix = @"__ANEM_THEMEDICON";
 
     if ([resourceName hasPrefix:anemPrefix]){
@@ -405,6 +429,16 @@ static CGImageRef newLICreateIconForImages(CFArrayRef images, int variant, int p
 }
 %end
 
+static int (*oldLSCheckEntitlementForAuditToken)(void *, NSString *);
+
+static int newLSCheckEntitlementForAuditToken(void *arg0, NSString *entitlement){
+    if ([entitlement isEqualToString:@"com.apple.lsapplicationworkspace.rebuildappdatabases"]){
+        return 1;
+    }
+
+    return oldLSCheckEntitlementForAuditToken(arg0, entitlement);
+}
+
 //CGContextFillRect (underlays)
 
 %ctor {
@@ -429,6 +463,22 @@ static CGImageRef newLICreateIconForImages(CFArrayRef images, int variant, int p
         {(void *)&LICreateIconForImages, (void **)&newLICreateIconForImages, (void **)&oldLICreateIconForImages}
     };
     substitute_hook_functions(hook, 3, NULL, SUBSTITUTE_NO_THREAD_SAFETY);
+
+    void *img = substitute_open_image("/System/Library/Frameworks/CoreServices.framework/CoreServices");
+    if (img){
+        const char *names[1] = {
+            "__LSCheckEntitlementForAuditToken"
+        };
+        void *syms[1];
+        substitute_find_private_syms(img, names, syms, 1);
+
+        struct substitute_function_hook hook13[1] = {
+            {(void *)syms[0], (void **)&newLSCheckEntitlementForAuditToken, (void **)&oldLSCheckEntitlementForAuditToken}
+        };
+        substitute_hook_functions(hook13, 1, NULL, SUBSTITUTE_NO_THREAD_SAFETY);
+
+        substitute_close_image(img);
+    }
 
     struct substitute_function_hook hook12[1] = {
         {(void *)&_CFBundleCopyFindResources, (void **)&new_CFBundleCopyFindResources, (void **)&old_CFBundleCopyFindResources}

@@ -2,7 +2,7 @@
 
 @interface LSApplicationProxy : NSObject
 + (nullable LSApplicationProxy *)applicationProxyForIdentifier:(NSString *)arg1;
-- (void)setAlternateIconName:(NSString *)name withResult:(void (^)(bool success))result;
+- (void)setAlternateIconName:(NSString *)name withResult:(void (^)(bool success, NSError *error))result;
 @end
 
 @interface IBTheme : NSObject
@@ -76,9 +76,9 @@ static void forceReloadNow(){
         for (NSString *bundleIdentifier in changesRequired){
     		LSApplicationProxy *app = [LSApplicationProxy applicationProxyForIdentifier:bundleIdentifier];
     		if ([changesRequired[bundleIdentifier] boolValue]){
-    			[app setAlternateIconName:@"__ANEM__AltIcon" withResult:^(BOOL success){}];
+    			[app setAlternateIconName:@"__ANEM__AltIcon" withResult:^(BOOL success, NSError *error){}];
     		} else {
-    			[app setAlternateIconName:nil withResult:^(BOOL success){}];
+    			[app setAlternateIconName:nil withResult:^(BOOL success, NSError *error){}];
     		}
     	}
     }];

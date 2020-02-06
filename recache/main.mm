@@ -154,7 +154,7 @@ BOOL clearCaches(BOOL verbose) {
 
 	// TODO: allow themes to provide custom cache delete paths
 
-	run_cmd("/usr/bin/killall -KILL lsd lsdiconservice");
+	run_cmd("/usr/bin/killall -KILL lsd lsdiconservice iconservicesagent");
 
 	if (![[[proxy iconsDictionary] objectForKey:@"CFBundleAlternateIcons"] objectForKey:@"__ANEM__AltIcon"]){
 		run_cmd("/usr/bin/uicache -a");

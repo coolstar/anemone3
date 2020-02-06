@@ -3,6 +3,7 @@
 		Executables = (
 			lsd,
 			lsdiconservice,
+			iconservicesagent,
 		);
 		Bundles = ( "com.apple.springboard" );
 	};
