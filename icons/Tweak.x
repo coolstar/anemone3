@@ -380,6 +380,7 @@ static CGImageRef newLICreateIconForImages(CFArrayRef images, int variant, int p
     iPhone @3x: 32 [180x180]
     iPhone @3x (XS Max): 80 [192x192]
     iPad @3x: 24
+    iPad @2x (small): 32775
     */
 
     if (variant == 80)
@@ -390,6 +391,9 @@ static CGImageRef newLICreateIconForImages(CFArrayRef images, int variant, int p
 
     if (variant == 33)
         variant = 15;
+
+    if (variant == 32775)
+        variant = 24;
 
     CGImageRef rawIcon = oldLICreateIconForImages(images, variant, precomposed);
 
