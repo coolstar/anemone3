@@ -3,6 +3,7 @@
 #import <dlfcn.h>
 
 @interface ISConcreteImage : NSObject
+- (instancetype)initWithCGImage:(CGImageRef)cgImage scale:(CGFloat)scale minimumSize:(CGSize)minimumSize placeholder:(BOOL)placeholder;
 - (CGImageRef) cgImage;
 @end
 
@@ -218,9 +219,18 @@ static void loadCalendarSettings(){
 }
 %end
 
+static UIImage *lastCalendarImage = nil;
+
+%hook CUIKIcon
+- (ISConcreteImage *)imageForImageDescriptor:(ISImageDescriptor *)descriptor{
+	%orig;
+	ISConcreteImage *newImage = [[%c(ISConcreteImage) alloc] initWithCGImage:[lastCalendarImage CGImage] scale:lastCalendarImage.scale minimumSize:lastCalendarImage.size placeholder:NO];
+	return newImage;
+}
+%end
+
 %hook CUIKDefaultIconGenerator
 - (CGImageRef)iconImageWithDate:(NSDate *)date calendar:(id)calendar format:(NSInteger)format size:(CGSize)imageSize scale:(CGFloat)scale {
-	NSLog(@"Calendar Stack: %@", [NSThread callStackSymbols]);
 	loadCalendarSettings();
 
 
@@ -293,7 +303,7 @@ static void loadCalendarSettings(){
 	ISIcon *iconServicesIcon = [[%c(ISIcon) alloc] initWithBundleIdentifier:@"com.apple.mobilecal"];
 
 	ISImageDescriptor *descriptor = [[%c(ISImageDescriptor) alloc] initWithSize:imageSize scale:scale];
-	[descriptor setShouldApplyMask:NO];
+	[descriptor setShouldApplyMask:YES];
 
 	ISConcreteImage *rawIcon = [iconServicesIcon imageForImageDescriptor:descriptor];
 
@@ -303,7 +313,9 @@ static void loadCalendarSettings(){
 
 	UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
 	UIGraphicsEndImageContext();
-	return [newImage CGImage];
+
+	lastCalendarImage = newImage;
+	return %orig;
 }
 %end
 
