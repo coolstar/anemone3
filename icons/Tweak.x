@@ -2,7 +2,7 @@
 #include <sys/types.h>
 #include <sys/sysctl.h>
 #include <dlfcn.h>
-#include <substitute.h>
+#include <libhooker.h>
 
 static BOOL IBThemesLoaded = NO;
 static NSMutableArray *IBActiveThemes = nil;
@@ -287,30 +287,6 @@ static CGImageRef *newCGImageSourceCreateWithURL(NSURL *url, NSDictionary *optio
 	return oldCGImageSourceCreateWithURL(url, options);
 }
 
-CFTypeRef _CFBundleCopyFindResources(CFBundleRef, CFURLRef, CFArrayRef, CFStringRef, CFStringRef, CFStringRef, CFStringRef, Boolean, Boolean, Boolean (^)(CFStringRef, Boolean *));
-
-static CFTypeRef (*old_CFBundleCopyFindResources)(CFBundleRef, CFURLRef, CFArrayRef, NSString *, CFStringRef, CFStringRef, CFStringRef, Boolean, Boolean, Boolean (^)(CFStringRef, Boolean *));
-
-static CFTypeRef new_CFBundleCopyFindResources(CFBundleRef bundle, CFURLRef bundleURL, CFArrayRef array, NSString *resourceName, CFStringRef resourceType, CFStringRef subPath, CFStringRef lproj, Boolean returnArray, Boolean localized, Boolean (^predicate)(CFStringRef filename, Boolean *stop)){
-    if (bundleURL == NULL && returnArray == false && predicate == nil){
-        NSString *anemPrefix = @"__ANEM_THEMEDICON";
-
-        if ([resourceName hasPrefix:anemPrefix]){
-            NSString *bundleIdentifier = (NSString *)CFBundleGetIdentifier(bundle);
-            if ([bundleIdentifier isEqualToString:@"com.anemoneteam.anemone"])
-                bundleIdentifier = @"com.anemonetheming.anemone";
-
-            if ([bundleIdentifier isEqualToString:@"org.coolstar.electra1141"])
-                bundleIdentifier = @"org.coolstar.electra1131";
-
-            NSString *filename = IBGetThemedIconWithPrefix(bundleIdentifier, [resourceName substringFromIndex:anemPrefix.length]);
-            if (filename)
-                return CFURLCopyAbsoluteURL((CFURLRef)[NSURL fileURLWithPath:filename]);
-        }
-    }
-    return old_CFBundleCopyFindResources(bundle, bundleURL, array, resourceName, resourceType, subPath, lproj, returnArray, localized, predicate);
-}
-
 static CFURLRef (*oldCFBundleCopyResourceURL)(CFBundleRef, NSString *, NSString *, NSString *);
 
 static CFURLRef newCFBundleCopyResourceURL(CFBundleRef cfbundle, NSString *resourceName, NSString *resourceType, NSString *subDirName){
@@ -460,38 +436,29 @@ static int newLSCheckEntitlementForAuditToken(void *arg0, NSString *entitlement)
     IBThemesLoaded = NO;
 	%init();
 
-    struct substitute_function_hook hook[3] = {
+    const struct LHFunctionHook hook[5] = {
         {(void *)&CGImageSourceCreateWithURL, (void **)&newCGImageSourceCreateWithURL, (void **)&oldCGImageSourceCreateWithURL},
         {(void *)&CGContextSetFillColor, (void **)&newCGContextSetFillColor, (void **)&oldCGContextSetFillColor},
 
-        {(void *)&LICreateIconForImages, (void **)&newLICreateIconForImages, (void **)&oldLICreateIconForImages}
+        {(void *)&LICreateIconForImages, (void **)&newLICreateIconForImages, (void **)&oldLICreateIconForImages},
+        {(void *)&CFBundleCopyResourceURL, (void **)&newCFBundleCopyResourceURL, (void **)&oldCFBundleCopyResourceURL},
+        {(void *)&CFBundleCopyResourceURLForLocalization, (void **)&newCFBundleCopyResourceURLForLocalization, (void **)&oldCFBundleCopyResourceURLForLocalization}
     };
-    substitute_hook_functions(hook, 3, NULL, SUBSTITUTE_NO_THREAD_SAFETY);
+    LHHookFunctions(hook, 5);
 
-    void *img = substitute_open_image("/System/Library/Frameworks/CoreServices.framework/CoreServices");
+    struct libhooker_image *img = LHOpenImage("/System/Library/Frameworks/CoreServices.framework/CoreServices");
     if (img){
         const char *names[1] = {
             "__LSCheckEntitlementForAuditToken"
         };
         void *syms[1];
-        substitute_find_private_syms(img, names, syms, 1);
+        LHFindSymbols(img, names, syms, 1);
 
-        struct substitute_function_hook hook13[1] = {
+        const struct LHFunctionHook hook13[1] = {
             {(void *)syms[0], (void **)&newLSCheckEntitlementForAuditToken, (void **)&oldLSCheckEntitlementForAuditToken}
         };
-        substitute_hook_functions(hook13, 1, NULL, SUBSTITUTE_NO_THREAD_SAFETY);
+        LHHookFunctions(hook13, 1);
 
-        substitute_close_image(img);
-    }
-
-    struct substitute_function_hook hook12[1] = {
-        {(void *)&_CFBundleCopyFindResources, (void **)&new_CFBundleCopyFindResources, (void **)&old_CFBundleCopyFindResources}
-    };
-    if (substitute_hook_functions(hook12, 1, NULL, SUBSTITUTE_NO_THREAD_SAFETY) != SUBSTITUTE_OK){
-        struct substitute_function_hook hook11[2] = {
-            {(void *)&CFBundleCopyResourceURL, (void **)&newCFBundleCopyResourceURL, (void **)&oldCFBundleCopyResourceURL},
-            {(void *)&CFBundleCopyResourceURLForLocalization, (void **)&newCFBundleCopyResourceURLForLocalization, (void **)&oldCFBundleCopyResourceURLForLocalization}
-        };
-        substitute_hook_functions(hook11, 2, NULL, SUBSTITUTE_NO_THREAD_SAFETY);
+        LHCloseImage(img);
     }
 }

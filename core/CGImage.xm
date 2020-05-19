@@ -1,6 +1,6 @@
 #import "ANEMSettingsManager.h"
 #import "Bundle.h"
-#import <substitute.h>
+#import <libhooker.h>
 
 extern "C" {
 	CGImageRef *CGImageSourceCreateWithFile(NSString *path, NSDictionary *options);
@@ -35,10 +35,10 @@ static CGImageRef *newCGImageSourceCreateWithURL(NSURL *url, NSDictionary *optio
 
 %ctor {
 	if (![[[NSBundle mainBundle] bundleIdentifier] isEqualToString:@"org.coolstar.anemone"]){
-		struct substitute_function_hook hook[2] = {
+		struct LHFunctionHook hook[2] = {
 			{(void *)&CGImageSourceCreateWithFile, (void **)&newCGImageSourceCreateWithFile, (void **)&oldCGImageSourceCreateWithFile},
 			{(void *)&CGImageSourceCreateWithURL, (void **)&newCGImageSourceCreateWithURL, (void **)&oldCGImageSourceCreateWithURL}
 		};
-		substitute_hook_functions(hook, 2, NULL, SUBSTITUTE_NO_THREAD_SAFETY);
+		LHHookFunctions(hook, 2);
 	}
 }

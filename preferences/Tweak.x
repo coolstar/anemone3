@@ -1,4 +1,5 @@
-#import <substitute.h>
+#import <libhooker.h>
+#import <objc/runtime.h>
 #import <dlfcn.h>
 
 @interface UIImage(bundle)
@@ -50,7 +51,7 @@ static CFArrayRef CPBitmapCreateImagesFromPath_new(NSString *path, NSObject **ic
 
 		void *appsupport = dlopen("/System/Library/PrivateFrameworks/AppSupport.framework/AppSupport", RTLD_NOW);
 		*(void **)(&anem_CPBitmapCreateImagesFromPath) = dlsym(appsupport, "CPBitmapCreateImagesFromPath");
-		struct substitute_function_hook hook = {(void *)anem_CPBitmapCreateImagesFromPath, (void **)&CPBitmapCreateImagesFromPath_new, (void **)&oldCPBitmapCreateImagesFromPath};
-		substitute_hook_functions(&hook, 1, NULL, SUBSTITUTE_NO_THREAD_SAFETY);
+		const struct LHFunctionHook hook = {(void *)anem_CPBitmapCreateImagesFromPath, (void **)&CPBitmapCreateImagesFromPath_new, (void **)&oldCPBitmapCreateImagesFromPath};
+		LHHookFunctions(&hook, 1);
 	}
 }

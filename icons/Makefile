@@ -5,7 +5,7 @@ AnemoneIcons_FILES = Tweak.x Clock.xm
 AnemoneIcons_FRAMEWORKS = MobileCoreServices
 AnemoneIcons_PRIVATE_FRAMEWORKS = MobileIcons
 AnemoneIcons_CFLAGS = -fobjc-arc
-AnemoneIcons_LDFLAGS = -F. -lsubstitute
+AnemoneIcons_LDFLAGS = -F. -lhooker -lsubstitute
 AnemoneIcons_USE_SUBSTRATE = 0
 
 include $(THEOS_MAKE_PATH)/tweak.mk
