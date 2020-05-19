@@ -2,6 +2,20 @@
 #import "UIColor+HTMLColors.h"
 #import <dlfcn.h>
 
+@interface ISConcreteImage : NSObject
+- (CGImageRef) cgImage;
+@end
+
+@interface ISImageDescriptor : NSObject
+- (instancetype)initWithSize:(CGSize)size scale:(CGFloat)scale;
+- (void)setShouldApplyMask:(BOOL)applyMask;
+@end
+
+@interface ISIcon : NSObject
+- (instancetype) initWithBundleIdentifier:(NSString *)bundleIdentifier;
+- (ISConcreteImage *) imageForImageDescriptor:(ISImageDescriptor *)descriptor;
+@end
+
 @interface SBCalendarApplicationIcon : NSObject
 - (UIFont *)numberFont;
 - (UIColor *)colorForDayOfWeek;
@@ -135,7 +149,6 @@ static void loadCalendarSettings(){
 	UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
 	UIGraphicsEndImageContext();
 	return newImage;
-	return %orig;
 }
 
 %new;
@@ -205,33 +218,94 @@ static void loadCalendarSettings(){
 }
 %end
 
-/*%hook CUIKIconDrawingObject
-- (UIFont *)dayNumberFont {
-	UIFont *font = %orig;
+%hook CUIKDefaultIconGenerator
+- (CGImageRef)iconImageWithDate:(NSDate *)date calendar:(id)calendar format:(NSInteger)format size:(CGSize)imageSize scale:(CGFloat)scale {
+	NSLog(@"Calendar Stack: %@", [NSThread callStackSymbols]);
+	loadCalendarSettings();
 
-	if ([dateSettings objectForKey:@"FontName"] && [dateSettings objectForKey:@"FontSize"])
-		font = [UIFont fontWithName:[dateSettings objectForKey:@"FontName"] size:[[dateSettings objectForKey:@"FontSize"] floatValue]];
-	else if ([dateSettings objectForKey:@"FontName"])
-		font = [UIFont fontWithName:[dateSettings objectForKey:@"FontName"] size:[font pointSize]];
-	else if ([dateSettings objectForKey:@"FontSize"])
-		font = [font fontWithSize:[[dateSettings objectForKey:@"FontSize"] floatValue]];
 
-	return font;
+	CGSize textSize = CGSizeMake(60, 60);
+	if ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPad){
+		textSize = CGSizeMake(72, 72);
+	}
+	UIGraphicsBeginImageContextWithOptions(textSize, NO, scale);
+	CGContextRef ctx = UIGraphicsGetCurrentContext();
+	if (ctx == nil)
+		return nil;
+
+	NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+	[dateFormatter setDateStyle:NSDateFormatterNoStyle];
+	[dateFormatter setTimeStyle:NSDateFormatterNoStyle];
+	[dateFormatter setLocale:[NSLocale currentLocale]];
+
+	CGFloat dateFontSize = 39.5;
+	if ([[dateSettings objectForKey:@"FontSize"] isKindOfClass:[NSNumber class]])
+		dateFontSize = [[dateSettings objectForKey:@"FontSize"] floatValue];
+
+	[dateFormatter setDateFormat:@"d"];
+	NSString *day = [dateFormatter stringFromDate:date];
+
+	if ([dateTextCase isEqualToString:@"lowercase"])
+		day = [day lowercaseString];
+	else if ([dateTextCase isEqualToString:@"uppercase"])
+		day = [day uppercaseString];
+
+	UIFont *numberFont = [UIFont systemFontOfSize:dateFontSize];
+
+	CGSize size = CGSizeZero;
+	if (numberFont)
+		size = [day sizeWithAttributes:@{NSFontAttributeName:numberFont}];
+
+	CGContextSetShadowWithColor(ctx, CGSizeMake(dateShadowXoffset,dateShadowYoffset), dateShadowBlurRadius, dateShadowColor.CGColor);
+	CGContextSetAlpha(ctx, CGColorGetAlpha(dateTextColor.CGColor));
+	[day drawAtPoint:CGPointMake(dateXoffset + ((textSize.width-size.width)/2.0f),dateYoffset) withAttributes:@{NSFontAttributeName:numberFont, NSForegroundColorAttributeName:dateTextColor}];
+
+	UIColor *dayTextColor = [UIColor redColor];
+	if ([[daySettings objectForKey:@"TextColor"] isKindOfClass:[NSString class]])
+		dayTextColor = [UIColor anem_colorWithCSS:[daySettings objectForKey:@"TextColor"]];
+
+	[dateFormatter setDateFormat:@"EEEE"];
+	NSString *dayOfWeek = [dateFormatter stringFromDate:date];
+
+	if ([dayTextCase isEqualToString:@"lowercase"])
+		dayOfWeek = [dayOfWeek lowercaseString];
+	else if ([dayTextCase isEqualToString:@"uppercase"])
+		dayOfWeek = [dayOfWeek uppercaseString];
+
+	UIFont *dayOfWeekFont = [UIFont systemFontOfSize:dayFontSize];
+	if (dayOfWeekFont)
+		size = [dayOfWeek sizeWithAttributes:@{NSFontAttributeName:dayOfWeekFont}];
+
+	CGContextSetShadowWithColor(ctx, CGSizeMake(dayShadowXoffset,dayShadowYoffset), dayShadowBlurRadius, dayShadowColor.CGColor);
+
+	CGContextSetAlpha(ctx, CGColorGetAlpha(dayTextColor.CGColor));
+	[dayOfWeek drawAtPoint:CGPointMake(dayXoffset + ((textSize.width-size.width)/2.0f),dayYoffset) withAttributes:@{NSFontAttributeName:dayOfWeekFont, NSForegroundColorAttributeName:dayTextColor}];
+
+	UIImage *textImage = UIGraphicsGetImageFromCurrentImageContext();
+	UIGraphicsEndImageContext();
+
+	UIGraphicsBeginImageContextWithOptions(imageSize, NO, scale);
+
+	ctx = UIGraphicsGetCurrentContext();
+	if (ctx == nil)
+		return nil;
+
+	ISIcon *iconServicesIcon = [[%c(ISIcon) alloc] initWithBundleIdentifier:@"com.apple.mobilecal"];
+
+	ISImageDescriptor *descriptor = [[%c(ISImageDescriptor) alloc] initWithSize:imageSize scale:scale];
+	[descriptor setShouldApplyMask:NO];
+
+	ISConcreteImage *rawIcon = [iconServicesIcon imageForImageDescriptor:descriptor];
+
+	UIImage *rawIconUIImage = [UIImage imageWithCGImage:[rawIcon cgImage]];
+	[rawIconUIImage drawInRect:CGRectMake(0, 0, imageSize.width, imageSize.height)];
+	[textImage drawInRect:CGRectMake(0, 0, imageSize.width, imageSize.height)];
+
+	UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
+	UIGraphicsEndImageContext();
+	return [newImage CGImage];
 }
-
-- (UIFont *)dateNameFont:(id)arg1 {
-	UIFont *font = %orig;
-
-	if ([daySettings objectForKey:@"FontName"] && [daySettings objectForKey:@"FontSize"])
-		font = [UIFont fontWithName:[daySettings objectForKey:@"FontName"] size:[[daySettings objectForKey:@"FontSize"] floatValue]];
-	else if ([daySettings objectForKey:@"FontName"])
-		font = [UIFont fontWithName:[daySettings objectForKey:@"FontName"] size:[font pointSize]];
-	else if ([daySettings objectForKey:@"FontSize"])
-		font = [font fontWithSize:[[daySettings objectForKey:@"FontSize"] floatValue]];
-
-	return font;
-}
-%end*/
+%end
 
 %ctor {
 	if (kCFCoreFoundationVersionNumber > MaxSupportedCFVersion)
