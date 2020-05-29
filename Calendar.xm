@@ -229,10 +229,8 @@ static UIImage *lastCalendarImage = nil;
 }
 %end
 
-%hook CUIKDefaultIconGenerator
-- (CGImageRef)iconImageWithDate:(NSDate *)date calendar:(id)calendar format:(NSInteger)format size:(CGSize)imageSize scale:(CGFloat)scale {
+bool renderImage13(NSDate *date, CGSize imageSize, CGFloat scale){
 	loadCalendarSettings();
-
 
 	CGSize textSize = CGSizeMake(60, 60);
 	if ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPad){
@@ -241,7 +239,7 @@ static UIImage *lastCalendarImage = nil;
 	UIGraphicsBeginImageContextWithOptions(textSize, NO, scale);
 	CGContextRef ctx = UIGraphicsGetCurrentContext();
 	if (ctx == nil)
-		return nil;
+		return false;
 
 	NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
 	[dateFormatter setDateStyle:NSDateFormatterNoStyle];
@@ -298,7 +296,7 @@ static UIImage *lastCalendarImage = nil;
 
 	ctx = UIGraphicsGetCurrentContext();
 	if (ctx == nil)
-		return nil;
+		return false;
 
 	ISIcon *iconServicesIcon = [[%c(ISIcon) alloc] initWithBundleIdentifier:@"com.apple.mobilecal"];
 
@@ -315,6 +313,21 @@ static UIImage *lastCalendarImage = nil;
 	UIGraphicsEndImageContext();
 
 	lastCalendarImage = newImage;
+	return true;
+}
+
+%hook CUIKDefaultIconGenerator
+- (CGImageRef)iconImageWithDate:(NSDate *)date calendar:(id)calendar format:(NSInteger)format size:(CGSize)imageSize scale:(CGFloat)scale {
+	if (!renderImage13(date, imageSize, scale)){
+		return nil;
+	}
+	return %orig;
+}
+
+- (CGImageRef)iconImageWithDateComponents:(NSDateComponents *)dateComponents calendar:(NSCalendar *)calendar format:(NSInteger)format size:(CGSize)imageSize scale:(CGFloat)scale {
+	if (!renderImage13([calendar dateFromComponents:dateComponents], imageSize, scale)){
+		return nil;
+	}
 	return %orig;
 }
 %end

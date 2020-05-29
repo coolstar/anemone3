@@ -4,6 +4,7 @@
 #import <spawn.h>
 #import <dlfcn.h>
 #import <objc/runtime.h>
+#import <sys/stat.h>
 #import "../common/MobileCoreServices-private.h"
 
 #pragma clang diagnostic push 
@@ -154,6 +155,8 @@ BOOL clearCaches(BOOL verbose) {
 
 	// TODO: allow themes to provide custom cache delete paths
 
+	chmod("/var/mobile/Library/Preferences/com.anemoneteam.anemone.plist", 0644);
+	chmod("/var/mobile/Library/Preferences/com.anemoneteam.anemoneiconsoverride.plist", 0644);
 	run_cmd("/usr/bin/killall -KILL lsd lsdiconservice iconservicesagent");
 
 	if (![[[proxy iconsDictionary] objectForKey:@"CFBundleAlternateIcons"] objectForKey:@"__ANEM__AltIcon"]){

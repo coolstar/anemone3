@@ -419,6 +419,14 @@ static int newLSCheckEntitlementForAuditToken(void *arg0, NSString *entitlement)
     return oldLSCheckEntitlementForAuditToken(arg0, entitlement);
 }
 
+static bool (*oldLIIsURLContainedInDirectory)(NSURL *url, NSURL *url2);
+static bool newLIIsURLContainedInDirectory(NSURL *url, NSURL *url2){
+    if ([[url absoluteString] hasPrefix:@"file:///Library/Themes/"]){
+        return true;
+    }
+    return oldLIIsURLContainedInDirectory(url, url2);
+}
+
 //CGContextFillRect (underlays)
 
 %ctor {
@@ -446,19 +454,35 @@ static int newLSCheckEntitlementForAuditToken(void *arg0, NSString *entitlement)
     };
     LHHookFunctions(hook, 5);
 
-    struct libhooker_image *img = LHOpenImage("/System/Library/Frameworks/CoreServices.framework/CoreServices");
-    if (img){
+    struct libhooker_image *coreServicesImg = LHOpenImage("/System/Library/Frameworks/CoreServices.framework/CoreServices");
+    if (coreServicesImg){
         const char *names[1] = {
             "__LSCheckEntitlementForAuditToken"
         };
         void *syms[1];
-        LHFindSymbols(img, names, syms, 1);
+        LHFindSymbols(coreServicesImg, names, syms, 1);
 
         const struct LHFunctionHook hook13[1] = {
             {(void *)syms[0], (void **)&newLSCheckEntitlementForAuditToken, (void **)&oldLSCheckEntitlementForAuditToken}
         };
         LHHookFunctions(hook13, 1);
 
-        LHCloseImage(img);
+        LHCloseImage(coreServicesImg);
+    }
+
+    struct libhooker_image *mobileIconsImage = LHOpenImage("/System/Library/PrivateFrameworks/MobileIcons.framework/MobileIcons");
+    if (mobileIconsImage){
+        const char *names[1] = {
+            "__LIIsURLContainedInDirectory"
+        };
+        void *syms[1];
+        LHFindSymbols(mobileIconsImage, names, syms, 1);
+
+        const struct LHFunctionHook hook135[1] = {
+            {(void *)syms[0], (void **)&newLIIsURLContainedInDirectory, (void **)&oldLIIsURLContainedInDirectory}
+        };
+        LHHookFunctions(hook135, 1);
+
+        LHCloseImage(mobileIconsImage);
     }
 }

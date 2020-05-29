@@ -110,10 +110,18 @@
 }
 
 - (NSInteger)userInterfaceIdiom {
+	if (![_userDefaults objectForKey:@"userInterfaceIdiom"]){
+		NSDictionary *rawSettings = [NSDictionary dictionaryWithContentsOfFile:preferenceFilePath];
+		return [[rawSettings objectForKey:@"userInterfaceIdiom"] integerValue];
+	}
 	return [_userDefaults integerForKey:@"userInterfaceIdiom"];
 }
 
 - (NSInteger)displayScale {
+	if (![_userDefaults objectForKey:@"displayScale"]){
+		NSDictionary *rawSettings = [NSDictionary dictionaryWithContentsOfFile:preferenceFilePath];
+		return [[rawSettings objectForKey:@"displayScale"] integerValue];
+	}
 	return [_userDefaults integerForKey:@"displayScale"];
 }
 @end
