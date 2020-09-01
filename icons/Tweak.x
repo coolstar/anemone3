@@ -16,7 +16,7 @@ static NSDictionary *IBActiveOverrides = nil;
 #define HOMEDIR @"/var/mobile"
 #endif
 #pragma clang diagnostic pop
-#define overridesFilePath [HOMEDIR stringByAppendingPathComponent:@"Library/Preferences/com.anemoneteam.anemoneiconsoverride.plist"]
+#define preferenceFilePath [HOMEDIR stringByAppendingPathComponent:@"Library/Preferences/com.anemoneteam.anemone.plist"]
 
 static BOOL OverlayLoaded = NO;
 static CGImageRef OverlayImage = nil;
@@ -75,7 +75,8 @@ static CGImageRef UnderlayImageSpringBoard = nil;
         }
     }
 
-    IBActiveOverrides = [NSDictionary dictionaryWithContentsOfFile:overridesFilePath];
+    NSDictionary *preferences = [NSDictionary dictionaryWithContentsOfFile:preferenceFilePath];
+    IBActiveOverrides = [preferences objectForKey:@"iconOverridess"];
     NSMutableDictionary *_newIBOverrides = [[NSMutableDictionary alloc] init];
     for (NSDictionary *bundleIdentifier in IBActiveOverrides){
         NSString *theme = [[IBActiveOverrides objectForKey:bundleIdentifier] objectForKey:@"theme"];
