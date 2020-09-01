@@ -76,7 +76,7 @@ static CGImageRef UnderlayImageSpringBoard = nil;
     }
 
     NSDictionary *preferences = [NSDictionary dictionaryWithContentsOfFile:preferenceFilePath];
-    IBActiveOverrides = [preferences objectForKey:@"iconOverridess"];
+    IBActiveOverrides = [preferences objectForKey:@"iconOverrides"];
     NSMutableDictionary *_newIBOverrides = [[NSMutableDictionary alloc] init];
     for (NSDictionary *bundleIdentifier in IBActiveOverrides){
         NSString *theme = [[IBActiveOverrides objectForKey:bundleIdentifier] objectForKey:@"theme"];
@@ -88,7 +88,6 @@ static CGImageRef UnderlayImageSpringBoard = nil;
             [_newIBOverrides setObject:[IBActiveOverrides objectForKey:bundleIdentifier] forKey:bundleIdentifier];
         }
     }
-    [_newIBOverrides writeToFile:overridesFilePath atomically:YES];
     IBActiveOverrides = _newIBOverrides;
 }
 
