@@ -165,6 +165,10 @@ static NSString *IBGetThemedIconWithPrefix(NSString *displayIdentifier, NSString
     bool isiPad = ([settingsManager userInterfaceIdiom] == 1);
     int scale = (int)[settingsManager displayScale];
 
+    NSDictionary *themeOverride = [IBActiveOverrides objectForKey:displayIdentifier];
+    if ([themeOverride objectForKey:@"name"])
+        displayIdentifier = [themeOverride objectForKey:@"name"];
+
     NSMutableArray *potentialFilenames = [@[
     	[displayIdentifier stringByAppendingString:@"-large.png"], 
     	[displayIdentifier stringByAppendingString:suffix], 
