@@ -75,8 +75,12 @@ static CGImageRef UnderlayImageSpringBoard = nil;
         }
     }
 
-    NSDictionary *preferences = [NSDictionary dictionaryWithContentsOfFile:preferenceFilePath];
-    IBActiveOverrides = [preferences objectForKey:@"iconOverrides"];
+    if ([[[NSBundle mainBundle] bundleIdentifier] isEqualToString:@"com.anemoneteam.anemone"]){
+        IBActiveOverrides = [[NSUserDefaults standardUserDefaults] dictionaryForKey:@"iconOverrides"];
+    } else {
+        NSDictionary *preferences = [NSDictionary dictionaryWithContentsOfFile:preferenceFilePath];
+        IBActiveOverrides = [preferences objectForKey:@"iconOverrides"];
+    }
     NSMutableDictionary *_newIBOverrides = [[NSMutableDictionary alloc] init];
     for (NSDictionary *bundleIdentifier in IBActiveOverrides){
         NSString *theme = [[IBActiveOverrides objectForKey:bundleIdentifier] objectForKey:@"theme"];
