@@ -187,8 +187,9 @@ static void loadCalendarSettings(){
 
 	UIFont *numberFont = [UIFont fontWithName:dateFont size:dateFontSize];
 	CGSize size = CGSizeZero;
-	if (numberFont)
-		size = [day sizeWithAttributes:@{NSFontAttributeName:numberFont}];
+	if (!numberFont)
+		numberFont = [UIFont systemFontOfSize:dateFontSize weight:UIFontWeightThin];
+	size = [day sizeWithAttributes:@{NSFontAttributeName:numberFont}];
 
 	CGContextSetShadowWithColor(ctx, CGSizeMake(dateShadowXoffset,dateShadowYoffset), dateShadowBlurRadius, dateShadowColor.CGColor);
 	CGContextSetAlpha(ctx, CGColorGetAlpha(dateTextColor.CGColor));
@@ -209,8 +210,9 @@ static void loadCalendarSettings(){
 		dayOfWeek = [dayOfWeek uppercaseString];
 
 	UIFont *dayOfWeekFont = [UIFont fontWithName:dayFont size:dayFontSize];
-	if (dayOfWeekFont)
-		size = [dayOfWeek sizeWithAttributes:@{NSFontAttributeName:dayOfWeekFont}];
+	if (!dayOfWeekFont)
+		dayOfWeekFont = [UIFont systemFontOfSize:dayFontSize weight:UIFontWeightMedium];
+	size = [dayOfWeek sizeWithAttributes:@{NSFontAttributeName:dayOfWeekFont}];
 
 	CGContextSetShadowWithColor(ctx, CGSizeMake(dayShadowXoffset,dayShadowYoffset), dayShadowBlurRadius, dayShadowColor.CGColor);
 
