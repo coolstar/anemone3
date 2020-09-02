@@ -165,7 +165,6 @@ static NSString *IBGetThemedIconWithPrefix(NSString *displayIdentifier, NSString
     bool isiPad = ([settingsManager userInterfaceIdiom] == 1);
     int scale = (int)[settingsManager displayScale];
 
-    NSDictionary *themeOverride = [IBActiveOverrides objectForKey:displayIdentifier];
     if ([themeOverride objectForKey:@"name"])
         displayIdentifier = [themeOverride objectForKey:@"name"];
 
@@ -354,6 +353,8 @@ CGImageRef LICreateIconForImages(CFArrayRef, int, int);
 
 static CGImageRef (*oldLICreateIconForImages)(CFArrayRef, int, int);
 
+static int displayScale = 0;
+
 static CGImageRef newLICreateIconForImages(CFArrayRef images, int variant, int precomposed){
     isRenderingIcon = true;
 
@@ -365,10 +366,22 @@ static CGImageRef newLICreateIconForImages(CFArrayRef images, int variant, int p
     iPhone @3x (XS Max): 80 [192x192]
     iPad @3x: 24
     iPad @2x (small): 32775
+
+    XR and 11 shows up as 80 on iOS 13+ ???
     */
 
-    if (variant == 80)
+    if (variant == 80){
+        int scale = displayScale;
+        if (scale == 0){
+            ANEMSettingsManager *settingsManager = [%c(ANEMSettingsManager) sharedManager];
+            displayScale = (int)[settingsManager displayScale];
+            scale = displayScale;
+        }
         variant = 32;
+
+        if (scale == 2)
+            variant = 15;
+    }
 
     if (variant == 79)
         variant = 15;
